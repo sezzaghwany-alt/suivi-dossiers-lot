@@ -163,6 +163,29 @@
   .confirm-actions{display:flex;gap:.75rem;justify-content:center;}
 
   #toast{display:none;position:fixed;bottom:2rem;right:2rem;background:#1e293b;color:#fff;padding:12px 20px;border-radius:10px;font-family:'DM Mono',monospace;font-size:.85rem;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,.2);border-left:4px solid var(--green);animation:fadeUp .3s ease;max-width:360px;}
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen{display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f 0%,#1e293b 50%,#0f172a 100%);z-index:400;align-items:center;justify-content:center;}
+  .login-card{background:#fff;border-radius:24px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:fadeUp .4s ease;}
+  .login-logo{display:flex;align-items:center;gap:12px;margin-bottom:2rem;}
+  .login-logo-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+  .login-logo h2{font-size:1.1rem;font-weight:800;color:var(--text);}
+  .login-logo span{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;display:block;}
+  .login-title{font-size:1.4rem;font-weight:800;margin-bottom:.3rem;}
+  .login-sub{font-size:.82rem;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:1.8rem;}
+  .login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem;}
+  .login-label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;}
+  .login-input{background:#f8fafc;border:1.5px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:.9rem;font-family:'DM Mono',monospace;outline:none;transition:all .2s;width:100%;}
+  .login-input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.1);}
+  .login-input.error{border-color:var(--red);background:#fef2f2;}
+  .login-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;box-shadow:0 4px 14px rgba(37,99,235,.35);margin-top:.5rem;}
+  .login-btn:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.45);}
+  .login-btn:disabled{background:#94a3b8;transform:none;box-shadow:none;cursor:not-allowed;}
+  .login-error{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:10px 14px;border-radius:8px;font-size:.8rem;font-family:'DM Mono',monospace;margin-top:.75rem;display:none;}
+  .user-pill{display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #a7f3d0;padding:4px 12px 4px 8px;border-radius:20px;font-size:.75rem;font-family:'DM Mono',monospace;color:#065f46;}
+  .user-avatar{width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.7rem;font-weight:700;}
+  .logout-btn{background:none;border:none;color:#dc2626;cursor:pointer;font-size:.75rem;font-family:'DM Mono',monospace;padding:0;margin-left:4px;text-decoration:underline;}
+  .logout-btn:hover{color:#991b1b;}
 </style>
 </head>
 <body>
@@ -170,6 +193,31 @@
 <div id="loading">
   <div class="spinner"></div>
   <div id="loading-msg" style="font-family:'DM Mono',monospace;font-size:.85rem;color:var(--muted)">Connexion à la base de données...</div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:flex">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">⚗️</div>
+      <div><h2>SUIVI DOSSIERS DE LOT</h2><span>Tableau de bord qualité & production · 2026</span></div>
+    </div>
+    <div class="login-title">Connexion</div>
+    <div class="login-sub">Entrez vos identifiants pour accéder à l'application</div>
+    <div class="login-field">
+      <label class="login-label">Adresse email</label>
+      <input type="email" class="login-input" id="login-email" placeholder="votre@email.com" onkeydown="if(event.key==='Enter')document.getElementById('login-pwd').focus()">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Mot de passe</label>
+      <input type="password" class="login-input" id="login-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Se connecter</button>
+    <div style="text-align:center;margin-top:1.2rem;font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace">
+      Accès réservé au personnel autorisé<br>Contactez votre administrateur pour obtenir un compte
+    </div>
+  </div>
 </div>
 
 <header>
@@ -185,6 +233,11 @@
     <button class="export-btn" onclick="document.getElementById('file-input').click()">📂 Import Excel</button>
     <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFileUpload(event)" style="display:none">
     <button class="add-btn" onclick="openAddModal()">＋ Nouveau dossier</button>
+    <div class="user-pill" id="user-pill" style="display:none">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <span id="user-email-label">—</span>
+      <button class="logout-btn" onclick="doLogout()">Déconnexion</button>
+    </div>
   </div>
 </header>
 
@@ -342,32 +395,113 @@
 <div id="toast"></div>
 
 <script>
-// ── SUPABASE REST API (sans librairie externe) ────────
+// ── SUPABASE REST API ─────────────────────────────────
 const SUPA_URL = 'https://lriqsjgiyovozamgvjtc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyaXFzamdpeW92b3phbWd2anRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NzQ1NzksImV4cCI6MjA4ODE1MDU3OX0.iNqA9-eQYaJ4EYf7domsO5KQ5FQcaUsgvphwR8FlSvk';
-const HEADERS = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 const API = SUPA_URL + '/rest/v1/dossiers_lot';
+const AUTH_API = SUPA_URL + '/auth/v1';
+
+let currentToken = null; // JWT token de l'utilisateur connecté
+
+function getHeaders() {
+  return {
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + (currentToken || SUPA_KEY),
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+}
 
 async function sbSelect() {
-  const r = await fetch(API + '?order=created_at.desc', { headers: HEADERS });
+  const r = await fetch(API + '?order=created_at.desc', { headers: getHeaders() });
   if (!r.ok) throw new Error('HTTP ' + r.status + ' — ' + await r.text());
   return r.json();
 }
 async function sbInsert(records) {
   const body = Array.isArray(records) ? records : [records];
-  const r = await fetch(API, { method: 'POST', headers: HEADERS, body: JSON.stringify(body) });
+  const r = await fetch(API, { method: 'POST', headers: getHeaders(), body: JSON.stringify(body) });
   if (!r.ok) throw new Error('HTTP ' + r.status + ' — ' + await r.text());
   return r.json();
 }
 async function sbUpdate(id, record) {
-  const r = await fetch(API + '?id=eq.' + id, { method: 'PATCH', headers: HEADERS, body: JSON.stringify(record) });
+  const r = await fetch(API + '?id=eq.' + id, { method: 'PATCH', headers: getHeaders(), body: JSON.stringify(record) });
   if (!r.ok) throw new Error('HTTP ' + r.status + ' — ' + await r.text());
   return r.json();
 }
 async function sbDelete(id) {
-  const r = await fetch(API + '?id=eq.' + id, { method: 'DELETE', headers: HEADERS });
+  const r = await fetch(API + '?id=eq.' + id, { method: 'DELETE', headers: getHeaders() });
   if (!r.ok) throw new Error('HTTP ' + r.status + ' — ' + await r.text());
   return true;
+}
+
+// ── AUTH ──────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pwd = document.getElementById('login-pwd').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  errEl.style.display = 'none';
+
+  if (!email || !pwd) { showLoginError('Veuillez remplir tous les champs.'); return; }
+
+  btn.disabled = true; btn.textContent = '⟳ Connexion...';
+
+  try {
+    const r = await fetch(AUTH_API + '/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pwd })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error_description || data.msg || 'Identifiants incorrects');
+
+    // Connexion réussie
+    currentToken = data.access_token;
+    const userEmail = data.user?.email || email;
+    sessionStorage.setItem('supa_token', currentToken);
+    sessionStorage.setItem('supa_email', userEmail);
+
+    showApp(userEmail);
+  } catch(e) {
+    showLoginError(e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Se connecter';
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+  document.getElementById('login-email').classList.add('error');
+  document.getElementById('login-pwd').classList.add('error');
+}
+
+async function showApp(email) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('login-email').classList.remove('error');
+  document.getElementById('login-pwd').classList.remove('error');
+
+  // Afficher le nom de l'utilisateur
+  const initials = email.slice(0, 2).toUpperCase();
+  document.getElementById('user-avatar').textContent = initials;
+  document.getElementById('user-email-label').textContent = email;
+  document.getElementById('user-pill').style.display = 'flex';
+
+  document.getElementById('loading').style.display = 'flex';
+  await loadData();
+  document.getElementById('loading').style.display = 'none';
+}
+
+function doLogout() {
+  currentToken = null;
+  sessionStorage.removeItem('supa_token');
+  sessionStorage.removeItem('supa_email');
+  document.getElementById('user-pill').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pwd').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  allData = []; filteredData = [];
 }
 
 // ── STATE ─────────────────────────────────────────────
@@ -754,17 +888,19 @@ function exportToExcel(){
 
 // ── INIT ──────────────────────────────────────────────
 (async()=>{
-  document.getElementById('loading').style.display='flex';
-  document.getElementById('dashboard').style.display='block';
-  const ok = await loadData();
-  document.getElementById('loading').style.display='none';
-  if(!ok) {
-    showToast('❌ Impossible de se connecter. Vérifiez votre connexion internet et que la table existe dans Supabase.','#dc2626');
+  // Vérifier si une session existe déjà
+  const savedToken = sessionStorage.getItem('supa_token');
+  const savedEmail = sessionStorage.getItem('supa_email');
+  if (savedToken) {
+    currentToken = savedToken;
+    await showApp(savedEmail || '');
   }
+  // Sinon l'écran de connexion est déjà affiché par défaut
 })();
 
 // Auto-refresh toutes les 30s (multi-utilisateurs)
 setInterval(async()=>{
+  if (!currentToken) return; // Ne pas rafraîchir si déconnecté
   try {
     const data = await sbSelect();
     allData=data;filteredData=[...data];
